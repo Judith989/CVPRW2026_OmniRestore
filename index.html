@@ -1,0 +1,746 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+  <title>OmniRestore: A Parameter-Efficient Framework for Universal Adverse-Weather Image Restoration</title>
+  <meta name="author" content="Judith N. Njoku">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="OmniRestore: A lightweight multimodal framework for universal adverse-weather image restoration. CVPR Workshop 2026.">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <style>
+    /* ── Reset & Base ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans', sans-serif; background: #fff; color: #222; width: 100%; }
+    a { color: #2c3e50; }
+    a:hover { color: #e67e22; }
+
+    /* ── Root content container (matches OneRestore layout) ── */
+    .root-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 30px;
+    }
+
+    /* ── Title / name ── */
+    name {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a1a2e;
+      line-height: 1.25;
+      display: block;
+      text-align: center;
+    }
+
+    /* ── Author list ── */
+    #author-list {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 16px;
+    }
+    #author-list a {
+      color: #2980b9;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    #author-list a:hover { text-decoration: underline; }
+
+    #remark-list {
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+      margin-top: 6px;
+    }
+
+    #institution-list {
+      text-align: center;
+      font-size: 16px;
+      color: #444;
+      margin-top: 8px;
+      line-height: 1.8;
+    }
+
+    #publication {
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: #c0392b;
+      margin-top: 12px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Link buttons (exact OneRestore style) ── */
+    #button-list {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .link-button {
+      display: inline-block;
+      margin: 4px 3px;
+    }
+
+    .link-button-content {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: #2c3e50;
+      color: white !important;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      transition: background-color 0.25s, color 0.25s;
+      border: 2px solid #2c3e50;
+    }
+    .link-button-content:hover {
+      background-color: #fff;
+      color: #2c3e50 !important;
+    }
+    .link-button-content svg { width: 1.1em; height: 1.1em; }
+
+    /* ── GitHub badges ── */
+    #count { padding-top: 16px; text-align: center; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0;
+      background: #1a1a2e;
+      margin-top: 24px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .stat-item {
+      flex: 1;
+      min-width: 160px;
+      text-align: center;
+      padding: 20px 12px;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: #fff;
+      display: block;
+      line-height: 1;
+    }
+    .stat-num.orange { color: #e67e22; }
+    .stat-num.green  { color: #2ecc71; }
+    .stat-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.55);
+      margin-top: 5px;
+    }
+
+    /* ── Section headings (matches OneRestore .section-name) ── */
+    .section-name {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      padding: 24px 0 12px;
+      color: #1a1a2e;
+    }
+
+    /* ── Section text ── */
+    .section-content-text {
+      font-size: 16px;
+      line-height: 1.8;
+      color: #444;
+      text-align: justify;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ── Contribution cards ── */
+    .contrib-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+      margin-top: 16px;
+    }
+    .contrib-card {
+      background: #f8f9fb;
+      border: 1.5px solid #dde3ee;
+      border-top: 3px solid #2c3e50;
+      border-radius: 10px;
+      padding: 24px 22px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .contrib-card:nth-child(1) { border-top-color: #e67e22; }
+    .contrib-card:nth-child(2) { border-top-color: #2980b9; }
+    .contrib-card:nth-child(3) { border-top-color: #27ae60; }
+    .contrib-card:nth-child(4) { border-top-color: #8e44ad; }
+    .contrib-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); transform: translateY(-2px); }
+    .contrib-card h3 { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+    .contrib-card p  { font-size: 14px; line-height: 1.65; color: #555; }
+    .contrib-icon    { font-size: 26px; margin-bottom: 10px; }
+
+    /* ── Controllable demo buttons (matches OneRestore) ── */
+    .demo-btn {
+      background-color: #2c3e50;
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      font-size: 15px;
+      margin: 4px 2px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .demo-btn:hover {
+      background-color: #ecf0f1;
+      color: #2c3e50;
+      border: 2px solid #2c3e50;
+    }
+    .demo-btn.active {
+      background-color: #e67e22;
+      border: 2px solid #e67e22;
+    }
+
+    /* ── Results table ── */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 12px;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #dde3ee;
+    }
+    .results-table thead { background: #1a1a2e; color: #fff; }
+    .results-table th { padding: 12px 14px; text-align: left; font-weight: 500; font-size: 13px; }
+    .results-table th.r, .results-table td.r { text-align: right; }
+    .results-table td { padding: 10px 14px; border-bottom: 1px solid #edf0f5; color: #555; }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr.group td { background: #f4f6fb; font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; padding: 6px 14px; }
+    .results-table tr.ours td { background: rgba(41,128,185,0.06); font-weight: 600; color: #222; }
+    .best   { color: #c0392b !important; font-weight: 700 !important; }
+    .second { color: #2980b9 !important; font-weight: 600 !important; }
+
+    /* ── BibTeX ── */
+    .bibtex {
+      background: #1a1a2e;
+      border-radius: 10px;
+      padding: 24px 28px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .bibtex code {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: #a8c8f0;
+      line-height: 1.7;
+      white-space: pre;
+    }
+    .copy-bib {
+      position: absolute;
+      top: 12px; right: 12px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.75);
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .copy-bib:hover { background: rgba(255,255,255,0.22); color: #fff; }
+
+    /* ── Shaded section ── */
+    .shaded-section {
+      background: #f5f5f5;
+      margin: 30px 0 0;
+      padding: 10px 0 30px;
+    }
+
+    /* ── Poster hover ── */
+    .poster-wrap { display: block; transition: opacity 0.2s; }
+    .poster-wrap:hover { opacity: 0.88; }
+
+    /* ── Footer ── */
+    footer {
+      background: #1a1a2e;
+      color: rgba(255,255,255,0.45);
+      text-align: center;
+      padding: 28px 20px;
+      font-size: 13px;
+      margin-top: 50px;
+    }
+    footer a { color: rgba(255,255,255,0.6); }
+
+    @media (max-width: 680px) {
+      name { font-size: 22px; }
+      .section-name { font-size: 22px; }
+      .stat-num { font-size: 26px; }
+      #author-list { font-size: 15px; }
+    }
+  </style>
+
+  <script>
+    // Controllable demo switcher
+    function showDegradation(id, label) {
+      document.querySelectorAll('.demo-result').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.demo-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(id).style.display = 'block';
+      document.getElementById('active-label').textContent = label;
+      event.currentTarget.classList.add('active');
+    }
+
+    // BibTeX copy
+    function copyBib() {
+      const text = document.getElementById('bib-text').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-bib');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+    }
+  </script>
+</head>
+
+<body style="width:100%;">
+<div style="width:100%;">
+
+  <!-- ═══════════════════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════════════════════ -->
+  <div class="root-content" style="padding-top:36px;">
+
+    <!-- Logo + Title -->
+    <div style="display:flex; align-items:center; justify-content:center; gap:18px; flex-wrap:wrap;">
+      <!-- Replace with your actual logo if you have one -->
+      <div style="background:#1a1a2e; color:#fff; font-family:'Google Sans',sans-serif; font-size:22px; font-weight:800; padding:10px 18px; border-radius:10px; letter-spacing:0.02em;">
+        Omni<span style="color:#e67e22;">Restore</span>
+      </div>
+      <name>OmniRestore: A Parameter-Efficient Framework for Universal Adverse-Weather Image Restoration</name>
+    </div>
+
+    <br>
+
+    <!-- Authors -->
+    <div id="author-list">
+      <a href="https://www.judithnnjoku.me" target="_blank">Judith N. Njoku</a>&nbsp;&nbsp;&nbsp;
+      <a href="mailto:dshukla@uwyo.edu">Diksha Shukla</a>
+    </div>
+
+    <div id="institution-list">
+      Dept. of Electrical Engineering &amp; Computer Science, University of Wyoming, USA
+    </div>
+
+    <p id="publication">CVPR Workshop 2026</p>
+
+    <!-- Link buttons -->
+    <div id="button-list">
+      <span class="link-button">
+        <a class="link-button-content" href="https://arxiv.org/abs/XXXX.XXXXX" target="_blank">
+          <i class="ai ai-arxiv" style="font-size:1.2em;"></i> ArXiv
+        </a>
+      </span>
+      <span class="link-button">
+        <a class="link-button-content" href="https://github.com/Judith989/omnirestore" target="_blank">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+      </span>
+      <span class="link-button">
+        <a class="link-button-content" href="assets/poster.png" target="_blank">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M2 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v11.5a.5.5 0 0 1-.777.416L7 13.101l-4.223 2.815A.5.5 0 0 1 2 15.5V4zm2-1a1 1 0 0 0-1 1v10.566l3.723-2.482a.5.5 0 0 1 .554 0L11 14.566V4a1 1 0 0 0-1-1H4z"/><path fill-rule="evenodd" d="M4.268 1H12a1 1 0 0 1 1 1v11.768l.223.148A.5.5 0 0 0 14 13.5V2a2 2 0 0 0-2-2H6a2 2 0 0 0-1.732 1z"/></svg>
+          Poster
+        </a>
+      </span>
+      <span class="link-button">
+        <a class="link-button-content" href="#bib">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M2 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v11.5a.5.5 0 0 1-.777.416L7 13.101l-4.223 2.815A.5.5 0 0 1 2 15.5V4zm2-1a1 1 0 0 0-1 1v10.566l3.723-2.482a.5.5 0 0 1 .554 0L11 14.566V4a1 1 0 0 0-1-1H4z"/><path fill-rule="evenodd" d="M4.268 1H12a1 1 0 0 1 1 1v11.768l.223.148A.5.5 0 0 0 14 13.5V2a2 2 0 0 0-2-2H6a2 2 0 0 0-1.732 1z"/></svg>
+          BibTeX
+        </a>
+      </span>
+    </div>
+
+    <!-- GitHub badges -->
+    <div id="count">
+      <img src="https://img.shields.io/github/stars/Judith989/omnirestore?label=%F0%9F%8C%9F%20Star&color=blue" alt="Stars">
+      &nbsp;&nbsp;
+      <img src="https://img.shields.io/github/forks/Judith989/omnirestore?label=%F0%9F%94%A7%20Fork&color=green" alt="Forks">
+    </div>
+
+    <!-- Key stats bar -->
+    <div class="stats-bar" style="margin-top:28px;">
+      <div class="stat-item">
+        <span class="stat-num orange">29.86 dB</span>
+        <div class="stat-label">PSNR on CDD-11 — #1 SoTA</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">2.6M</span>
+        <div class="stat-label">Inference parameters</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num green">+1.14 dB</span>
+        <div class="stat-label">Over OneRestore (ECCV'24)</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num orange">6.3 ms</span>
+        <div class="stat-label">Latency per image</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">41%</span>
+        <div class="stat-label">LPIPS improvement</div>
+      </div>
+    </div>
+
+    <!-- Teaser / overview figure -->
+    <div style="padding-top:28px; text-align:center;">
+      <!--
+        Replace with your actual Fig. 1.
+        Recommended: export the overview panel (adverse weather examples + efficiency scatter)
+        from your paper as a PNG named assets/teaser.png
+      -->
+      <img src="assets/teaser.png" alt="OmniRestore overview: adverse weather degradations and efficiency comparison"
+           width="100%" style="border-radius:10px; border:1px solid #dde3ee;"
+           onerror="this.style.display='none'"/>
+    </div>
+
+  </div><!-- /root-content header -->
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       VISUAL RESULTS — before/after sliders
+  ══════════════════════════════════════════════════════════ -->
+  <div class="shaded-section">
+    <div class="root-content">
+      <h1 class="section-name">🔥 Visual Restoration Results 🔥</h1>
+      <p class="section-content-text" style="text-align:center; margin-bottom:20px;">
+        Interactive before/after sliders — drag to compare input vs OmniRestore output.
+        <br><em>Replace the iframe UIDs below with your own
+        <a href="https://juxtapose.knightlab.com/" target="_blank">Juxtapose</a> embed links
+        once you upload your image pairs.</em>
+      </p>
+
+      <!-- Row 1: two sliders side by side -->
+      <table style="border:0; width:100%; margin-bottom:10px;">
+        <tbody><tr>
+          <td style="padding:10px; text-align:center;">
+            <!--
+              To create your own slider:
+              1. Go to https://juxtapose.knightlab.com/
+              2. Upload your "degraded" image as the left image
+              3. Upload the OmniRestore restored image as the right
+              4. Copy the iframe src UID and replace below
+            -->
+            <iframe frameborder="0" class="juxtapose" height="280" width="100%"
+              src="https://cdn.knightlab.com/libs/juxtapose/latest/embed/index.html?uid=YOUR_UID_1">
+            </iframe>
+            <p style="font-size:13px; color:#888; margin-top:6px;">CDD-11 — Composite (haze + rain)</p>
+          </td>
+          <td style="padding:10px; text-align:center;">
+            <iframe frameborder="0" class="juxtapose" height="280" width="100%"
+              src="https://cdn.knightlab.com/libs/juxtapose/latest/embed/index.html?uid=YOUR_UID_2">
+            </iframe>
+            <p style="font-size:13px; color:#888; margin-top:6px;">Snow100K</p>
+          </td>
+        </tr></tbody>
+      </table>
+
+      <!-- Row 2 -->
+      <table style="border:0; width:100%;">
+        <tbody><tr>
+          <td style="padding:10px; text-align:center;">
+            <iframe frameborder="0" class="juxtapose" height="280" width="100%"
+              src="https://cdn.knightlab.com/libs/juxtapose/latest/embed/index.html?uid=YOUR_UID_3">
+            </iframe>
+            <p style="font-size:13px; color:#888; margin-top:6px;">LOL — Low-light</p>
+          </td>
+          <td style="padding:10px; text-align:center;">
+            <iframe frameborder="0" class="juxtapose" height="280" width="100%"
+              src="https://cdn.knightlab.com/libs/juxtapose/latest/embed/index.html?uid=YOUR_UID_4">
+            </iframe>
+            <p style="font-size:13px; color:#888; margin-top:6px;">WeatherBench — Snow</p>
+          </td>
+        </tr></tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       ABSTRACT
+  ══════════════════════════════════════════════════════════ -->
+  <div class="root-content" style="padding-top:30px;">
+    <h1 class="section-name">Abstract</h1>
+    <p class="section-content-text">
+      Reliable perception under adverse weather remains a significant challenge for vision systems.
+      While state-of-the-art multi-weather image restoration models achieve strong performance,
+      they often rely on large architectures with high parameter counts, limiting their utility
+      for real-time or edge deployment. To address this efficiency gap, we propose
+      <strong>OmniRestore</strong>, a lightweight multimodal framework specifically designed for
+      adverse-weather image restoration across rain, fog, snow, and low-light conditions, including
+      challenging composite degradations.
+    </p>
+    <br>
+    <p class="section-content-text">
+      OmniRestore consists of two key components: (i) a <strong>multimodal weather-scene embedder</strong>
+      that aligns CLIP-derived text prototypes with image features via a ResNet encoder, refined
+      offline by a Kolmogorov-Arnold Network (KAN) adapter to produce compact, weather-discriminative
+      condition embeddings; and (ii) a <strong>parameter-efficient restoration backbone</strong> that
+      injects these embeddings through hybrid attention blocks integrating embedding-conditioned
+      cross-attention, shifted window self-attention, and channel recalibration. Evaluated across
+      CDD-11, Snow100K, LOL, and WeatherBench, OmniRestore achieves state-of-the-art restoration
+      fidelity and perceptual quality, outperforming the leading unified model OneRestore by
+      <strong>+1.14 dB PSNR</strong> and <strong>41% in LPIPS</strong> on CDD-11. Notably,
+      with only <strong>2.6M inference-time parameters</strong> — a 56.5% reduction compared to
+      OneRestore — OmniRestore offers a significantly more practical solution for
+      resource-constrained and edge-deployment environments.
+    </p>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       CONTRIBUTIONS
+  ══════════════════════════════════════════════════════════ -->
+  <div class="shaded-section">
+    <div class="root-content">
+      <h1 class="section-name">Contributions</h1>
+      <div class="contrib-grid">
+        <div class="contrib-card">
+          <div class="contrib-icon">🧠</div>
+          <h3>CLIP-KAN Weather-Scene Embedder</h3>
+          <p>Aligns CLIP text prototypes with visual features via a Kolmogorov-Arnold Network (KAN) adapter. Operates fully offline at inference — zero VLM, zero text encoder at test time. Achieves <strong>98.46% weather classification accuracy</strong>.</p>
+        </div>
+        <div class="contrib-card">
+          <div class="contrib-icon">⚡</div>
+          <h3>Lightweight Hybrid Attention Backbone</h3>
+          <p>U-Net with embedding-conditioned cross-attention, Swin shifted windows (W=8), and channel recalibration. FFN width pruning (factor 2.0) delivers <strong>~70% parameter reduction</strong>, compensated by 5×5 DWConv kernels.</p>
+        </div>
+        <div class="contrib-card">
+          <div class="contrib-icon">🎨</div>
+          <h3>Adaptive Refinement Stage (ARS)</h3>
+          <p>StyleModulation derives per-instance gain (γ) and bias (β) from condition embedding <em>e</em>. Enables degradation-specific color recalibration with negligible overhead. <strong>+41% LPIPS improvement</strong> over OneRestore on CDD-11.</p>
+        </div>
+        <div class="contrib-card">
+          <div class="contrib-icon">📐</div>
+          <h3>Perceptual Composite Loss</h3>
+          <p>Five-component objective: Smooth L1 + MS-SSIM + VGG-Contrastive + VGG-Perceptual + Deep Supervision. VGG contrastive explicitly pushes restored output away from degraded input and weather-degraded negatives.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       METHOD
+  ══════════════════════════════════════════════════════════ -->
+  <div class="root-content" style="padding-top:30px;">
+    <h1 class="section-name">Method</h1>
+    <!--
+      Replace assets/architecture.png with Fig. 2 from your paper.
+      Export from the PDF at high resolution.
+    -->
+    <img src="assets/architecture.png" width="100%"
+         style="border-radius:10px; border:1px solid #dde3ee;"
+         alt="OmniRestore architecture: CLIP-KAN embedder and lightweight U-Net backbone"
+         onerror="this.style.display='none'"/>
+    <p style="font-size:13px; color:#888; text-align:center; margin-top:10px;">
+      <strong>Fig. 2.</strong> Overview of OmniRestore.
+      (1) <strong>Multimodal Embedder</strong> (left): ResNet + KAN adapter aligns visual features with CLIP text prompts offline, generating weather condition embedding <em>e</em>.
+      (2) <strong>Lightweight Backbone</strong> (right): U-Net-style transformer injects <em>e</em> via cross-attention, concluding with ARS for final artifact removal.
+    </p>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       QUANTITATIVE RESULTS
+  ══════════════════════════════════════════════════════════ -->
+  <div class="shaded-section">
+    <div class="root-content">
+      <h1 class="section-name">Quantitative Results</h1>
+      <p class="section-content-text" style="text-align:center; margin-bottom:16px;">
+        Comparison on CDD-11 (11 degradation types: 4 single + 7 composite).
+        <span style="color:#c0392b; font-weight:700;">Red</span> = best,
+        <span style="color:#2980b9; font-weight:600;">blue</span> = second best.
+        All One-to-Composite models retrained on CDD-11.
+      </p>
+
+      <div style="overflow-x:auto;">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Method</th>
+              <th>Venue &amp; Year</th>
+              <th class="r">PSNR ↑</th>
+              <th class="r">SSIM ↑</th>
+              <th class="r">#Params</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="group"><td colspan="6">One-to-One (Single Degradation)</td></tr>
+            <tr><td></td><td>MIRNet</td><td>ECCV'20</td><td class="r">25.97</td><td class="r">0.8474</td><td class="r">31.79M</td></tr>
+            <tr><td></td><td>MPRNet</td><td>CVPR'21</td><td class="r">25.47</td><td class="r">0.8555</td><td class="r">15.74M</td></tr>
+            <tr><td></td><td>Restormer</td><td>CVPR'22</td><td class="r second">26.99</td><td class="r second">0.8646</td><td class="r">26.13M</td></tr>
+            <tr><td></td><td>NAFNet</td><td>ECCV'22</td><td class="r">24.13</td><td class="r">0.7964</td><td class="r">17.11M</td></tr>
+            <tr><td></td><td>SRUDC</td><td>ICCV'23</td><td class="r">27.64</td><td class="r">0.8600</td><td class="r">6.80M</td></tr>
+
+            <tr class="group"><td colspan="6">One-to-Many (Multi-degradation)</td></tr>
+            <tr><td></td><td>AirNet</td><td>CVPR'22</td><td class="r">23.75</td><td class="r">0.8140</td><td class="r">8.93M</td></tr>
+            <tr><td></td><td>PromptIR</td><td>NeurIPS'23</td><td class="r">25.90</td><td class="r">0.8499</td><td class="r">38.45M</td></tr>
+            <tr><td></td><td>WGWNSNet</td><td>CVPR'23</td><td class="r">26.96</td><td class="r">0.8626</td><td class="r">25.76M</td></tr>
+
+            <tr class="group"><td colspan="6">One-to-Composite (Unified Restoration)</td></tr>
+            <tr><td></td><td>OneRestore</td><td>ECCV'24</td><td class="r second">28.72</td><td class="r second">0.8821</td><td class="r">5.98M</td></tr>
+            <tr><td></td><td>AdaIR</td><td>ICLR'25</td><td class="r">28.54</td><td class="r">0.8779</td><td class="r">28.77M</td></tr>
+            <tr><td></td><td>M2Restore</td><td>TIP'25</td><td class="r">27.38</td><td class="r">0.8614</td><td class="r">47.5M</td></tr>
+            <tr class="ours">
+              <td></td>
+              <td><strong>OmniRestore (Ours)</strong></td>
+              <td>CVPRW'26</td>
+              <td class="r best">29.86</td>
+              <td class="r best">0.9244</td>
+              <td class="r best">2.60M</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       QUALITATIVE COMPARISON
+  ══════════════════════════════════════════════════════════ -->
+  <div class="root-content" style="padding-top:30px;">
+    <h1 class="section-name">Visual Restoration Comparisons</h1>
+    <!--
+      Replace assets/qualitative.png with Fig. 3 from your paper.
+    -->
+    <img src="assets/qualitative.png" width="100%"
+         style="border-radius:10px; border:1px solid #dde3ee;"
+         alt="Qualitative comparison across CDD-11, Snow100K, WeatherBench, LOL"
+         onerror="this.style.display='none'"/>
+    <p style="font-size:13px; color:#888; text-align:center; margin-top:10px;">
+      <strong>Fig. 3.</strong> Qualitative comparison across CDD-11, Snow100K, WeatherBench (rain &amp; snow), and LOL.
+      Columns: Input → SRResNet → SwinIR → Restormer → PromptIR → OneRestore → M2Restore → AdaIR →
+      <strong>OmniRestore (Ours)</strong> → Ground Truth.
+    </p>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       ABLATION
+  ══════════════════════════════════════════════════════════ -->
+  <div class="shaded-section">
+    <div class="root-content">
+      <h1 class="section-name">Ablation Studies</h1>
+      <p class="section-content-text" style="text-align:center; margin-bottom:20px;">
+        Step-by-step validation of each design choice on CDD-11.
+        The KAN adapter outperforms an equivalent MLP by <strong>+0.93 dB PSNR</strong> and <strong>−0.0371 LPIPS</strong>.
+      </p>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; flex-wrap:wrap;">
+        <!-- Backbone ablation -->
+        <div>
+          <p style="font-size:14px; font-weight:700; color:#1a1a2e; margin-bottom:8px;">Backbone Component Ablation</p>
+          <div style="overflow-x:auto;">
+            <table class="results-table">
+              <thead>
+                <tr><th>Baseline</th><th>FFN</th><th>5×5 DWConv</th><th>ARS</th><th class="r">Params</th><th class="r">PSNR</th><th class="r">LPIPS</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>✓</td><td></td><td></td><td></td><td class="r">5.10M</td><td class="r">28.50</td><td class="r">0.1821</td></tr>
+                <tr><td>✓</td><td>✓</td><td></td><td></td><td class="r">2.25M</td><td class="r">28.15</td><td class="r">0.1956</td></tr>
+                <tr><td>✓</td><td>✓</td><td>✓</td><td></td><td class="r">2.45M</td><td class="r">29.10</td><td class="r">0.1134</td></tr>
+                <tr class="ours"><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td class="r best">2.60M</td><td class="r best">29.86</td><td class="r best">0.0941</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Embedding ablation -->
+        <div>
+          <p style="font-size:14px; font-weight:700; color:#1a1a2e; margin-bottom:8px;">Cross-Module Embedding Comparison</p>
+          <div style="overflow-x:auto;">
+            <table class="results-table">
+              <thead>
+                <tr><th>Embedding Module</th><th class="r">Accuracy</th><th class="r">PSNR</th><th class="r">LPIPS</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>OneRestore Embedder</td><td class="r">0.8950</td><td class="r">27.85</td><td class="r">0.1603</td></tr>
+                <tr><td>CLIP-ResNet + MLP</td><td class="r">0.8510</td><td class="r">28.93</td><td class="r">0.1312</td></tr>
+                <tr class="ours"><td><strong>CLIP-ResNet + KAN (Ours)</strong></td><td class="r best">0.9846</td><td class="r best">29.86</td><td class="r best">0.0941</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       POSTER
+  ══════════════════════════════════════════════════════════ -->
+  <div class="root-content" style="padding-top:30px;">
+    <h1 class="section-name">Poster</h1>
+    <a href="assets/poster.png" target="_blank" class="poster-wrap">
+      <img src="assets/poster.png" width="100%"
+           style="border-radius:10px; border:1px solid #dde3ee;"
+           alt="OmniRestore CVPR Workshop 2026 Poster"
+           onerror="this.style.display='none'"/>
+    </a>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       BIBTEX
+  ══════════════════════════════════════════════════════════ -->
+  <div class="root-content" style="padding-top:30px;">
+    <a name="bib"></a>
+    <h1 class="section-name" style="text-align:left; font-size:25px;">BibTeX</h1>
+    <div class="bibtex" style="position:relative;">
+      <button class="copy-bib" onclick="copyBib()">Copy</button>
+      <code id="bib-text">@inproceedings{njoku2026omnirestore,
+  title     = {OmniRestore: A Parameter-Efficient Framework for Universal
+               Adverse-Weather Image Restoration},
+  author    = {Njoku, Judith N. and Shukla, Diksha},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision
+               and Pattern Recognition Workshops (CVPRW)},
+  year      = {2026},
+}</code>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       CONTACT
+  ══════════════════════════════════════════════════════════ -->
+  <div class="root-content" style="padding-top:30px; padding-bottom:50px;">
+    <h1 class="section-name" style="text-align:left; font-size:25px;">Contact</h1>
+    <p class="section-content-text">
+      If you have any questions about OmniRestore, feel free to reach out:
+      <strong><a href="mailto:jnjoku@uwyo.edu">jnjoku@uwyo.edu</a></strong><br><br>
+      <strong>Judith N. Njoku</strong> · University of Wyoming ·
+      <a href="https://www.judithnnjoku.me" target="_blank">www.judithnnjoku.me</a>
+    </p>
+  </div>
+
+</div><!-- /body wrapper -->
+
+<!-- Footer -->
+<footer>
+  OmniRestore · CVPR Workshop 2026 · University of Wyoming ·
+  <a href="https://github.com/Judith989/omnirestore" target="_blank">GitHub</a> ·
+  <a href="mailto:jnjoku@uwyo.edu">Contact</a><br>
+  <span style="font-size:11px; margin-top:4px; display:block;">
+    Page design inspired by <a href="https://gy65896.github.io/projects/ECCV2024_OneRestore/" target="_blank">OneRestore</a>.
+  </span>
+</footer>
+
+</body>
+</html>
